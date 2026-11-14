@@ -1,6 +1,6 @@
 # isaacsim_adaptor
 
-Isaac Lab adaptor for [UniEnv](https://github.com/UniEnvOrg/UniEnv)'s node system (package `unienv_isaacsim`), the
+Isaac Lab adaptor for [UniEnv](https://github.com/UniEnvOrg/UniEnv)'s node system (package `isaacsim_adaptor`), the
 counterpart of [genesis_adaptor](https://github.com/UniEnvOrg/genesis_adaptor) for Genesis. Written against Isaac Lab
 2.3.2 and Isaac Sim 5.1.0.
 
@@ -28,10 +28,10 @@ sensors below 0.
 
 ```python
 from isaaclab.app import AppLauncher
-app = AppLauncher(headless=True).app  # before any isaaclab / unienv_isaacsim import
+app = AppLauncher(headless=True).app  # before any isaaclab / isaacsim_adaptor import
 
 import isaaclab.sim as sim_utils
-from unienv_isaacsim import IsaacSimVecEnv, IsaacSimWorld, JointPositionTargetNode, JointStateNode
+from isaacsim_adaptor import IsaacSimVecEnv, IsaacSimWorld, JointPositionTargetNode, JointStateNode
 
 world = IsaacSimWorld(sim_utils.SimulationCfg(dt=1 / 120), MySceneCfg(num_envs=64, env_spacing=1.0), seed=0)
 nodes = [JointStateNode(world, "robot_state", entity="robot"),

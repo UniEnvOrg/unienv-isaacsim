@@ -3,7 +3,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "unienv_isaacsim"
+name = "isaacsim_adaptor"
 version = "0.0.1"
 description = "Isaac Lab adaptor for UniEnv's World / WorldNode / WorldEnv"
 readme = "README.md"
@@ -13,7 +13,7 @@ requires-python = ">=3.10"
 dependencies = ["unienv", "torch"]
 
 [tool.setuptools.packages.find]
-include = ["unienv_isaacsim*"]
+include = ["isaacsim_adaptor*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

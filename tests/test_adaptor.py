@@ -14,7 +14,7 @@ from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors import ContactSensorCfg
 from isaaclab.utils import configclass
 
-from unienv_isaacsim import (
+from isaacsim_adaptor import (
     ContactForceNode,
     IsaacSimVecEnv,
     IsaacSimWorld,
