@@ -1,4 +1,4 @@
-"""IsaacLabWorld, IsaacLabVecEnv and the generic nodes on 4 envs (needs a GPU): a cube dropped onto the ground and a
+"""IsaacSimWorld, IsaacSimVecEnv and the generic nodes on 4 envs (needs a GPU): a cube dropped onto the ground and a
 one-joint arm, one task node at 30 Hz over 120 Hz physics.
 
 Isaac Sim supports one simulation per process in practice (a second world after close() hangs in Kit), so both tests
@@ -14,10 +14,10 @@ from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors import ContactSensorCfg
 from isaaclab.utils import configclass
 
-from unienv_isaaclab import (
+from unienv_isaacsim import (
     ContactForceNode,
-    IsaacLabVecEnv,
-    IsaacLabWorld,
+    IsaacSimVecEnv,
+    IsaacSimWorld,
     JointPositionTargetNode,
     JointStateNode,
     RigidObjectNode,
@@ -102,12 +102,12 @@ class DropCube(RigidObjectNode):
 def env(tmp_path_factory):
     urdf = tmp_path_factory.mktemp("arm") / "arm.urdf"
     urdf.write_text(ARM_URDF)
-    world = IsaacLabWorld(sim_utils.SimulationCfg(dt=1.0 / PHYSICS_HZ, render_interval=DECIMATION),
+    world = IsaacSimWorld(sim_utils.SimulationCfg(dt=1.0 / PHYSICS_HZ, render_interval=DECIMATION),
                           scene_cfg(str(urdf)), seed=0)
     nodes = [DropCube(world), JointStateNode(world, "arm_state", entity="arm"),
              JointPositionTargetNode(world, "arm_target", entity="arm"),
              RootPoseNode(world, "cube_pose", entity="cube"), ContactForceNode(world, "cube_contact")]
-    env = IsaacLabVecEnv(world, nodes)
+    env = IsaacSimVecEnv(world, nodes)
     yield env
     env.close()
 

@@ -1,4 +1,4 @@
-"""IsaacLabWorld: UniEnv's World over Isaac Lab's SimulationContext and InteractiveScene.
+"""IsaacSimWorld: UniEnv's World over Isaac Lab's SimulationContext and InteractiveScene.
 
 It does what isaaclab.envs.DirectRLEnv does around its task code (DirectRLEnv.__init__, step's physics loop, reset,
 close), with one World.step() being one physics step. The scene is built in the constructor, because nodes need the
@@ -26,7 +26,7 @@ from unienv_interface.backends.pytorch import PyTorchComputeBackend
 from unienv_interface.world import World
 
 
-class IsaacLabWorld(World):
+class IsaacSimWorld(World):
     backend = PyTorchComputeBackend
 
     def __init__(self, sim_cfg: SimulationCfg, scene_cfg: InteractiveSceneCfg, *, seed: int | None = None,
@@ -75,7 +75,7 @@ class IsaacLabWorld(World):
         self.world_timestep = self.physics_dt
         self.batch_size = self.scene.num_envs
         self.step_count = 0
-        self.decimation = 1  # physics steps per env step; IsaacLabVecEnv sets it from the nodes' timesteps
+        self.decimation = 1  # physics steps per env step; IsaacSimVecEnv sets it from the nodes' timesteps
         self.substep = 0
         self.episode_length_buf = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         # the envs being reset (long, (n,)), set by reset() for the nodes' reset hooks
@@ -140,7 +140,7 @@ class IsaacLabWorld(World):
                 self.sim.render()
 
     def reload(self, *, seed: int | None = None, mask: torch.Tensor | None = None, **kwargs: Any) -> None:
-        raise NotImplementedError("IsaacLabWorld builds its scene once, in its constructor")
+        raise NotImplementedError("IsaacSimWorld builds its scene once, in its constructor")
 
     def close(self) -> None:
         """Release the scene and the simulation context (DirectRLEnv.close); a new world can be made afterwards."""

@@ -1,4 +1,4 @@
-"""IsaacLabVecEnv: a WorldEnv over an IsaacLabWorld with Isaac Lab's batched-env step semantics.
+"""IsaacSimVecEnv: a WorldEnv over an IsaacSimWorld with Isaac Lab's batched-env step semantics.
 
 UniEnv's WorldEnv leaves resetting finished envs to the caller and reads the observation before the reward. RL
 libraries for Isaac Lab (rsl_rl, rl_games, FlashSAC's loop) expect DirectRLEnv's behaviour instead, which this class
@@ -27,13 +27,13 @@ from unienv_interface.world import WorldNode
 from unienv_interface.world.env_composer import WorldEnv
 from unienv_interface.world.nodes.combined_node import CombinedWorldNode
 
-from .world import IsaacLabWorld
+from .world import IsaacSimWorld
 
 
-class IsaacLabVecEnv(WorldEnv):
-    world: IsaacLabWorld
+class IsaacSimVecEnv(WorldEnv):
+    world: IsaacSimWorld
 
-    def __init__(self, world: IsaacLabWorld, nodes: WorldNode | Iterable[WorldNode]):
+    def __init__(self, world: IsaacSimWorld, nodes: WorldNode | Iterable[WorldNode]):
         super().__init__(world, nodes, render_mode=None)
         self._first_reset = False  # the world is built in its constructor; reload is not used
         # physics steps per env step: the world's substep index runs 0 .. decimation - 1 within a step

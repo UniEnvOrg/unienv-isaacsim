@@ -1,12 +1,12 @@
-# isaaclab_adaptor
+# isaacsim_adaptor
 
-Isaac Lab adaptor for [UniEnv](https://github.com/UniEnvOrg/UniEnv)'s node system (package `unienv_isaaclab`), the
+Isaac Lab adaptor for [UniEnv](https://github.com/UniEnvOrg/UniEnv)'s node system (package `unienv_isaacsim`), the
 counterpart of [genesis_adaptor](https://github.com/UniEnvOrg/genesis_adaptor) for Genesis. Written against Isaac Lab
 2.3.2 and Isaac Sim 5.1.0.
 
-- `IsaacLabWorld`: owns Isaac Lab's `SimulationContext` and `InteractiveScene` and steps them one physics step at a
+- `IsaacSimWorld`: owns Isaac Lab's `SimulationContext` and `InteractiveScene` and steps them one physics step at a
   time. It is built once in its constructor (an Isaac stage cannot be rebuilt), so `reload` is not supported.
-- `IsaacLabVecEnv`: a `WorldEnv` with Isaac Lab's batched-env behaviour: `step` resets the envs that finished and
+- `IsaacSimVecEnv`: a `WorldEnv` with Isaac Lab's batched-env behaviour: `step` resets the envs that finished and
   returns their first observation of the new episode (rewards and dones are computed before that reset), the
   interface rsl_rl, rl_games and FlashSAC loops expect.
 - Nodes over the scene's entities, keyed by their name in the scene:
@@ -28,15 +28,15 @@ sensors below 0.
 
 ```python
 from isaaclab.app import AppLauncher
-app = AppLauncher(headless=True).app  # before any isaaclab / unienv_isaaclab import
+app = AppLauncher(headless=True).app  # before any isaaclab / unienv_isaacsim import
 
 import isaaclab.sim as sim_utils
-from unienv_isaaclab import IsaacLabVecEnv, IsaacLabWorld, JointPositionTargetNode, JointStateNode
+from unienv_isaacsim import IsaacSimVecEnv, IsaacSimWorld, JointPositionTargetNode, JointStateNode
 
-world = IsaacLabWorld(sim_utils.SimulationCfg(dt=1 / 120), MySceneCfg(num_envs=64, env_spacing=1.0), seed=0)
+world = IsaacSimWorld(sim_utils.SimulationCfg(dt=1 / 120), MySceneCfg(num_envs=64, env_spacing=1.0), seed=0)
 nodes = [JointStateNode(world, "robot_state", entity="robot"),
          JointPositionTargetNode(world, "robot_target", entity="robot", control_timestep=4 / 120)]
-env = IsaacLabVecEnv(world, nodes)
+env = IsaacSimVecEnv(world, nodes)
 
 context, obs, info = env.reset()
 # obs = {"robot_state": {"joint_position": ..., "joint_velocity": ...}}

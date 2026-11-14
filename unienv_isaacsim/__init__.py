@@ -2,7 +2,7 @@
 
 from .nodes import *  # noqa: F403
 from .nodes import __all__ as _nodes
-from .vec_env import IsaacLabVecEnv
-from .world import IsaacLabWorld
+from .vec_env import IsaacSimVecEnv
+from .world import IsaacSimWorld
 
-__all__ = ["IsaacLabWorld", "IsaacLabVecEnv", *_nodes]
+__all__ = ["IsaacSimWorld", "IsaacSimVecEnv", *_nodes]

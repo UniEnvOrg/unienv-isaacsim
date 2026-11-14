@@ -9,7 +9,7 @@ from isaaclab.assets import Articulation, RigidObject
 from unienv_interface.backends.pytorch import PyTorchComputeBackend
 from unienv_interface.space import BoxSpace
 
-from ..world import IsaacLabWorld
+from ..world import IsaacSimWorld
 from .base import SceneEntityNode, unbounded_obs_space
 
 
@@ -37,7 +37,7 @@ class ArticulationNode(SceneEntityNode):
 class JointStateNode(ArticulationNode):
     """Observation: ``joint_position`` and ``joint_velocity`` (N, n) of the chosen joints."""
 
-    def __init__(self, world: IsaacLabWorld, name: str, entity: str | None = None,
+    def __init__(self, world: IsaacSimWorld, name: str, entity: str | None = None,
                  joint_names: Sequence[str] | None = None):
         super().__init__(world, name, entity)
         self._select_joints(joint_names)
@@ -58,7 +58,7 @@ class JointPositionTargetNode(ArticulationNode):
     reset_priorities = {0}  # after the robots (50-80) have written their reset joint state
     pre_environment_step_priorities = {50}
 
-    def __init__(self, world: IsaacLabWorld, name: str, entity: str | None = None,
+    def __init__(self, world: IsaacSimWorld, name: str, entity: str | None = None,
                  joint_names: Sequence[str] | None = None, control_timestep: float | None = None):
         super().__init__(world, name, entity)
         self._select_joints(joint_names)
@@ -94,7 +94,7 @@ class RigidObjectNode(SceneEntityNode):
 class RootPoseNode(RigidObjectNode):
     """Observation: ``root_pose`` (N, 7: position, wxyz quaternion) in the world frame."""
 
-    def __init__(self, world: IsaacLabWorld, name: str, entity: str | None = None):
+    def __init__(self, world: IsaacSimWorld, name: str, entity: str | None = None):
         super().__init__(world, name, entity)
         self.observation_space = unbounded_obs_space(world, root_pose=(7,))
 

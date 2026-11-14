@@ -1,5 +1,5 @@
 """The world: Isaac Lab's simulation and scene as a UniEnv World."""
 
-from .isaaclab_world import IsaacLabWorld
+from .isaacsim_world import IsaacSimWorld
 
-__all__ = ["IsaacLabWorld"]
+__all__ = ["IsaacSimWorld"]

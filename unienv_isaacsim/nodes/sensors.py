@@ -5,7 +5,7 @@ from __future__ import annotations
 import torch
 from isaaclab.sensors import ContactSensor
 
-from ..world import IsaacLabWorld
+from ..world import IsaacSimWorld
 from .base import SceneEntityNode, unbounded_obs_space
 
 
@@ -18,7 +18,7 @@ class ContactSensorNode(SceneEntityNode):
 class ContactForceNode(ContactSensorNode):
     """Observation: ``net_force`` (N, bodies, 3), the net contact force on each of the sensor's bodies, world frame."""
 
-    def __init__(self, world: IsaacLabWorld, name: str, entity: str | None = None):
+    def __init__(self, world: IsaacSimWorld, name: str, entity: str | None = None):
         super().__init__(world, name, entity)
         self.observation_space = unbounded_obs_space(world, net_force=(self.entity.num_bodies, 3))
 
