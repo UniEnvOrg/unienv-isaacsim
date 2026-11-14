@@ -12,3 +12,6 @@ dependencies = ["unienv", "torch"]
 
 [tool.setuptools.packages.find]
 include = ["unienv_isaaclab*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
