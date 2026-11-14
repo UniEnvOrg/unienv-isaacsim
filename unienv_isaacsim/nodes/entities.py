@@ -70,7 +70,7 @@ class JointPositionTargetNode(ArticulationNode):
 
     def set_next_action(self, action: torch.Tensor | None) -> None:
         if action is not None:
-            self.target = action.to(self.target)
+            self.target = action.to(self.target, copy=True)  # reset() writes into it, never into the caller's
 
     def reset(self, *, priority: int = 0, seed: int | None = None, mask: torch.Tensor | None = None, **kwargs) -> None:
         ids = self.world.reset_ids
