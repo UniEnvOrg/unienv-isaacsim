@@ -5,8 +5,8 @@ close), with one World.step() being one physics step. The scene is built in the 
 scene's entity handles when they are made and an Isaac stage cannot be rebuilt, so reload is not supported.
 
 Counters the nodes share live here, as in DirectRLEnv: ``episode_length_buf`` (env steps since each env's reset; the
-env adapter increments it once per env step), ``substep`` (the physics step within the current env step, 0-based)
-and ``step_count`` (physics steps since start; drives the render interval).
+env adapter increments it once per env step), ``decimation`` (physics steps per env step), ``substep`` (the physics
+step within the current env step, 0-based) and ``step_count`` (physics steps since start; drives the render interval).
 """
 
 from __future__ import annotations
@@ -45,8 +45,8 @@ class IsaacLabWorld(World):
                 clone environments or add lights.
         """
         self._is_closed = False
-        self.seed = configure_seed(seed) if seed is not None else None
         if seed is not None:
+            configure_seed(seed)
             try:
                 import omni.replicator.core as rep
                 rep.set_global_seed(seed)
@@ -75,6 +75,7 @@ class IsaacLabWorld(World):
         self.world_timestep = self.physics_dt
         self.batch_size = self.scene.num_envs
         self.step_count = 0
+        self.decimation = 1  # physics steps per env step; IsaacLabVecEnv sets it from the nodes' timesteps
         self.substep = 0
         self.episode_length_buf = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         # the envs being reset (long, (n,)), set by reset() for the nodes' reset hooks
@@ -123,7 +124,7 @@ class IsaacLabWorld(World):
         """Reset the scene's assets and sensors and the episode counters of the envs in ``mask`` (bool, (N,); None:
         all), as DirectRLEnv._reset_idx's base part. Sets ``reset_ids`` for the nodes."""
         if seed is not None:
-            self.seed = configure_seed(seed)
+            configure_seed(seed)
         self.reset_ids = torch.arange(self.num_envs, device=self.device) if mask is None else \
             mask.nonzero().squeeze(-1)
         self.scene.reset(self.reset_ids)

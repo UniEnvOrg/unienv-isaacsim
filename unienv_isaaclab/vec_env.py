@@ -13,8 +13,8 @@ provides:
                                                      so no sim.forward, as DirectRLEnv.step)
         observation                                 (built once, after the resets: a reset env's first observation)
 
-``reset()`` keeps UniEnv's signature and returns (context, observation, info); it runs the full lifecycle including
-after_reset (world: write to sim, forward, camera re-renders). ``info`` merges the nodes' info dicts.
+``reset()`` is WorldEnv's: the full lifecycle including after_reset (world: write to sim, forward, camera
+re-renders). ``step``'s ``info`` merges the nodes' info dicts.
 """
 
 from __future__ import annotations
@@ -39,7 +39,6 @@ class IsaacLabVecEnv(WorldEnv):
         # physics steps per env step: the world's substep index runs 0 .. decimation - 1 within a step
         self.decimation = self._n_update_substeps * self._n_world_substeps
         world.decimation = self.decimation
-        self.info: dict[str, Any] = {}
 
     @property
     def num_envs(self) -> int:
@@ -61,21 +60,10 @@ class IsaacLabVecEnv(WorldEnv):
     def _signal(self, has: bool, get, dtype: torch.dtype) -> torch.Tensor:
         return get() if has else torch.zeros(self.num_envs, dtype=dtype, device=self.device)
 
-    def _run_resets(self, mask: torch.Tensor | None, seed: int | None = None) -> None:
-        self.world.reset(seed=seed, mask=mask)
+    def _run_resets(self, mask: torch.Tensor) -> None:
+        self.world.reset(mask=mask)
         for p in self._get_priority_order("reset"):
-            self.node.reset(priority=p, seed=seed, mask=mask)
-
-    def reset(self, *, mask: torch.Tensor | None = None, seed: int | None = None, **kwargs: Any):
-        """Reset the envs in ``mask`` (bool (N,); None: all) with the full lifecycle; returns (context, observation,
-        info) for all envs."""
-        self._run_resets(mask, seed)
-        self.world.after_reset(seed=seed, mask=mask)
-        for p in self._get_priority_order("after_reset"):
-            self.node.after_reset(priority=p, mask=mask)
-        context = self.node.get_context() if self.node.context_space is not None else None
-        obs = self.node.get_observation() if self.node.observation_space is not None else None
-        return context, obs, self.info
+            self.node.reset(priority=p, mask=mask)
 
     def step(self, action: Any):
         """One env step (``decimation`` physics steps); returns (observation, reward, terminated, truncated, info)
@@ -100,13 +88,9 @@ class IsaacLabVecEnv(WorldEnv):
         terminated = self._signal(n.has_termination_signal, n.get_termination, torch.bool)
         truncated = self._signal(n.has_truncation_signal, n.get_truncation, torch.bool)
         reward = self._signal(n.has_reward, n.get_reward, torch.float32)
-        self.info = self._merged_info()
+        info = self._merged_info()
         done = terminated | truncated
         if done.any():
             self._run_resets(done)
         obs = n.get_observation() if n.observation_space is not None else None
-        return obs, reward, terminated, truncated, self.info
-
-    def close(self) -> None:
-        self.node.close()
-        self.world.close()
+        return obs, reward, terminated, truncated, info

@@ -20,15 +20,4 @@ class SceneEntityNode(WorldNode):
 
     def __init__(self, world: IsaacLabWorld, name: str, entity: str | None = None):
         self.world, self.name = world, name
-        self.entity_name = entity or name
-        self.entity: Any = world.scene[self.entity_name]
-
-    @property
-    def num_envs(self) -> int:
-        return self.world.num_envs
-
-    def mask_ids(self, mask: torch.Tensor | None) -> torch.Tensor:
-        """The env indices (long, (n,)) of a bool reset mask (None: all)."""
-        if mask is None:
-            return torch.arange(self.num_envs, device=self.world.device)
-        return mask.nonzero().squeeze(-1)
+        self.entity: Any = world.scene[entity or name]
