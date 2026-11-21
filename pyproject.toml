@@ -7,7 +7,7 @@ name = "unienv_isaacsim"
 version = "0.0.1a1"
 description = "Isaac Lab adaptor for UniEnv's World / WorldNode / WorldEnv"
 readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 requires-python = ">=3.10"
 # Isaac Lab (isaaclab) is expected in the environment; it is not pip-resolvable here.
 dependencies = ["unienv>=0.0.1b16", "torch"]
