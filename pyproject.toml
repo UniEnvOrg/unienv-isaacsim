@@ -3,17 +3,25 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "isaacsim_adaptor"
-version = "0.0.1"
+name = "unienv_isaacsim"
+version = "0.0.1a1"
 description = "Isaac Lab adaptor for UniEnv's World / WorldNode / WorldEnv"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 # Isaac Lab (isaaclab) is expected in the environment; it is not pip-resolvable here.
-dependencies = ["unienv", "torch"]
+dependencies = ["unienv>=0.0.1b16", "torch"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/UniEnvOrg/unienv-isaacsim"
+Repository = "https://github.com/UniEnvOrg/unienv-isaacsim"
+Issues = "https://github.com/UniEnvOrg/unienv-isaacsim/issues"
 
 [tool.setuptools.packages.find]
-include = ["isaacsim_adaptor*"]
+include = ["unienv_isaacsim*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

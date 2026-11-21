@@ -16,7 +16,7 @@ jobs:
           set +e
           log="$RUNNER_TEMP/pytest_$GITHUB_RUN_ID.log"
           sbatch --wait -p bhattacharjee --gres=gpu:nvidia_rtx_6000_ada_generation:1 -o "$log" \
-            /home/pnt8/workspace/dex_ws/cluster/gh_runner/gpu_pytest.sbatch vtdex_rl "$GITHUB_WORKSPACE" isaacsim_adaptor
+            /home/pnt8/workspace/dex_ws/cluster/gh_runner/gpu_pytest.sbatch vtdex_rl "$GITHUB_WORKSPACE" unienv_isaacsim
           status=$?
           grep -vE '^[0-9T:-]+Z \[' "$log" | tail -150  # without Kit's own log lines
           exit $status
