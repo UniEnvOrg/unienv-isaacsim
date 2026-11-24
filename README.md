@@ -21,6 +21,10 @@ counterpart of [unienv-genesis](https://github.com/UniEnvOrg/unienv-genesis) for
   Their bases (`ArticulationNode`, `RigidObjectNode`, `ContactSensorNode`) hold the entity handle plus name lookups and
   state writes, for task nodes to subclass.
 
+  Their spaces carry UniEnv space metadata (`unienv_isaacsim.space_metadata`): joint names (resolved from the
+  `joint_names` patterns) with units from PhysX's DOF types (revolute: rad, prismatic: m), the root pose's
+  representation (world frame: env origins are not subtracted) and the contact forces' frame and bodies.
+
 Priorities follow UniEnv (higher runs first): scene geometry 80-100, robots and objects 50-80, tasks 0-50,
 sensors below 0.
 
@@ -59,4 +63,5 @@ From a checkout, with the tests:
 ```bash
 pip install -e '.[test]'
 pytest  # needs a GPU; launches Isaac Sim headless
+UNIENV_ISAACSIM_NO_SIM=1 pytest  # without Isaac Lab: only the tests that do not need it
 ```

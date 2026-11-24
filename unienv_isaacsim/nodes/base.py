@@ -7,6 +7,7 @@ part in the phases whose priority sets are non-empty, so these bases declare non
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
 import torch
@@ -25,8 +26,13 @@ class SceneEntityNode(WorldNode):
         self.entity: Any = world.scene[entity or name]
 
 
-def unbounded_obs_space(world: IsaacSimWorld, **shapes: tuple[int, ...]) -> DictSpace:
-    """A dict of unbounded float boxes, one per key, each (num_envs, *shape)."""
+def unbounded_obs_space(world: IsaacSimWorld, metadata: Mapping[str, Mapping[str, Any]] | None = None,
+                        **shapes: tuple[int, ...]) -> DictSpace:  # fmt: skip
+    """A dict of unbounded float boxes, one per key, each (num_envs, *shape); ``metadata``: the space metadata of some
+    of the keys (see unienv_isaacsim.space_metadata)."""
+    metadata = metadata or {}
+    if unknown := set(metadata) - set(shapes):
+        raise KeyError(f"metadata for keys without a shape: {sorted(unknown)}")
     boxes = {k: BoxSpace(PyTorchComputeBackend, -torch.inf, torch.inf, torch.float32, device=world.device,
-                         shape=(world.num_envs, *s)) for k, s in shapes.items()}
+                         shape=(world.num_envs, *s), metadata=metadata.get(k)) for k, s in shapes.items()}
     return DictSpace(PyTorchComputeBackend, boxes, device=world.device)

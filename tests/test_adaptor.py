@@ -13,6 +13,7 @@ from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors import ContactSensorCfg
 from isaaclab.utils import configclass
+from unienv_interface.space.space_utils.metadata_utils import validate_metadata
 
 from unienv_isaacsim import (
     ContactForceNode,
@@ -148,3 +149,19 @@ def test_nodes(env):
     assert torch.allclose(z, torch.full_like(z, CUBE / 2), atol=5e-3), z
     force_z = obs["cube_contact"]["net_force"][1:, 0, 2]
     assert torch.allclose(force_z, torch.full_like(force_z, MASS * 9.81), rtol=0.1), force_z
+
+
+def test_space_metadata(env):
+    """The nodes' spaces are described: joint names and units from PhysX's DOF types, the cube's pose and contacts."""
+    validate_metadata(env.observation_space)
+    validate_metadata(env.action_space)
+    obs = env.observation_space
+    assert obs["arm_state"]["joint_position"].metadata.to_dict()["names"] == ["hinge"]
+    assert obs["arm_state"]["joint_position"].metadata.to_dict()["units"] == ["rad"]
+    assert obs["arm_state"]["joint_velocity"].metadata.to_dict()["units"] == ["rad/s"]
+    assert env.action_space.metadata == {"kind": "action", "control": "joint_position", "mode": "absolute",
+                                         "units": ["rad"], "names": ["hinge"]}  # one action node: its space as is
+    pose = obs["cube_pose"]["root_pose"].metadata
+    assert pose["kind"] == "pose" and pose["frame"] == "world" and pose["rotation"] == "quat_wxyz"
+    force = obs["cube_contact"]["net_force"].metadata.to_dict()
+    assert force["frame"] == "world" and force["units"] == "N" and force["bodies"] == ["Cube"]

@@ -4,11 +4,19 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+import omni.physics.tensors
 import torch
 from isaaclab.assets import Articulation, RigidObject
 from unienv_interface.backends.pytorch import PyTorchComputeBackend
 from unienv_interface.space import BoxSpace
 
+from ..space_metadata import (
+    ROTATION,
+    TRANSLATION,
+    joint_position_target_metadata,
+    joint_state_metadata,
+    root_pose_metadata,
+)
 from ..world import IsaacSimWorld
 from .base import SceneEntityNode, unbounded_obs_space
 
@@ -28,9 +36,21 @@ class ArticulationNode(SceneEntityNode):
                           joint_ids: Sequence[int] | None = None) -> None:
         self.entity.write_joint_state_to_sim(q, dq, joint_ids=joint_ids, env_ids=env_ids)
 
+    def dof_types(self, joint_ids: Sequence[int]) -> list[str | None] | None:
+        """``"rotation"`` / ``"translation"`` of each joint (Isaac Lab's joints are PhysX's DOFs), from PhysX's
+        ``shared_metatype.dof_types`` (None for another type; None for all if PhysX does not have them)."""
+        types = getattr(self.entity.root_physx_view.shared_metatype, "dof_types", None)
+        if types is None:
+            return None
+        DofType = omni.physics.tensors.DofType  # noqa: N806
+        kinds = {int(DofType.Rotation): ROTATION, int(DofType.Translation): TRANSLATION}
+        return [kinds.get(int(types[i])) for i in joint_ids]
+
     def _select_joints(self, joint_names: Sequence[str] | None) -> None:
-        """``joint_ids`` and ``num_joints`` of the named joints, in that order (None: all)."""
+        """``joint_ids``, ``joint_names`` and ``num_joints`` of the named joints (names or regular expressions), in
+        that order (None: all)."""
         self.joint_ids = self.find_joint_ids(joint_names) if joint_names else list(range(self.entity.num_joints))
+        self.joint_names = [self.entity.joint_names[i] for i in self.joint_ids]
         self.num_joints = len(self.joint_ids)
 
 
@@ -41,7 +61,8 @@ class JointStateNode(ArticulationNode):
                  joint_names: Sequence[str] | None = None):
         super().__init__(world, name, entity)
         self._select_joints(joint_names)
-        self.observation_space = unbounded_obs_space(world, joint_position=(self.num_joints,),
+        md = joint_state_metadata(self.joint_names, self.dof_types(self.joint_ids))
+        self.observation_space = unbounded_obs_space(world, md, joint_position=(self.num_joints,),
                                                      joint_velocity=(self.num_joints,))
 
     def get_observation(self) -> dict[str, torch.Tensor]:
@@ -65,7 +86,9 @@ class JointPositionTargetNode(ArticulationNode):
         self.control_timestep = control_timestep
         limits = self.entity.data.soft_joint_pos_limits[:, self.joint_ids]
         self.action_space = BoxSpace(PyTorchComputeBackend, limits[..., 0], limits[..., 1], torch.float32,
-                                     device=world.device, shape=(world.num_envs, self.num_joints))
+                                     device=world.device, shape=(world.num_envs, self.num_joints),
+                                     metadata=joint_position_target_metadata(self.joint_names,
+                                                                             self.dof_types(self.joint_ids)))
         self.target = self.entity.data.joint_pos[:, self.joint_ids].clone()
 
     def set_next_action(self, action: torch.Tensor | None) -> None:
@@ -96,7 +119,7 @@ class RootPoseNode(RigidObjectNode):
 
     def __init__(self, world: IsaacSimWorld, name: str, entity: str | None = None):
         super().__init__(world, name, entity)
-        self.observation_space = unbounded_obs_space(world, root_pose=(7,))
+        self.observation_space = unbounded_obs_space(world, {"root_pose": root_pose_metadata()}, root_pose=(7,))
 
     def get_observation(self) -> dict[str, torch.Tensor]:
         return {"root_pose": self.entity.data.root_pose_w.clone()}
